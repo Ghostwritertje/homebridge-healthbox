@@ -1,35 +1,48 @@
 # HealthBox Homebridge Plugin
 
-A Homebridge plugin that adds homekit functionality to your HealthBox installation.
+A Homebridge plugin that brings a Renson Healthbox 3 into Apple Home over the Healthbox's local API.
 
-Requirements: a running HomeBridge server
+- **One fan per room** (`Fanv2`). Turning it on starts a boost for that room (`boostFanSpeed`% for `boostDuration`
+  seconds); turning it off ends the boost. A Healthbox can never be switched off completely, so "off" just means
+  "no boost".
+- **Air quality sensor** for the Healthbox's global air quality index (mapped to HomeKit's 1 = excellent … 5 = poor).
 
-**homebridge-healthbox-plugin**
+If the Healthbox is unreachable the accessories show "No Response" (requests time out after 2 s), and discovery
+retries in the background until the Healthbox is back.
 
-Exposes services for boosting the fan speed temporarily. 
-The Healthbox ventilation units can never be completely off. 
-The on-off switches that are provided with this plugin are only 
-intended for the temporary boost function.
+Fork of the archived [SuperJoran/homebridge-healthbox](https://github.com/SuperJoran/homebridge-healthbox)
+(npm `homebridge-healthbox-plugin` ≤ 1.1.6). Version 2.0 is not published to npm.
 
+## Requirements
+
+- Homebridge 1.8+ or 2.x
+- Node.js 22.12+, 24 or 26
 
 ## Installation
 
+Install it from GitHub into the same global `node_modules` that Homebridge uses (it builds on install):
 
-1. Install Homebridge using: `(sudo) npm install -g --unsafe-perm homebridge`
-2. Install this plugin using: `(sudo) npm install -g homebridge-healthbox-plugin`
-3. Update your Homebridge `config.json` using the sample below (append in the block 'platforms').
+    sudo npm install -g github:Ghostwritertje/homebridge-healthbox#v2.0.0
 
-Example config.json:
+Then add the platform to `config.json`:
 
     "platforms": [
         {
+            "platform": "HealthBoxHomebridgePlugin",
             "healthBoxUri": "http://192.168.1.3",
             "boostFanSpeed": 200,
-            "boostDuration": 3600,
-            "platform": "HealthBoxHomebridgePlugin"
+            "boostDuration": 3600
         }
     ]
 
+## Development
+
+    npm install
+    npm run lint
+    npm run build
+    # run against a throwaway storage dir; -I allows unauthenticated HAP requests for testing
+    node node_modules/homebridge/bin/homebridge.js -I -D -U /tmp/hb-test -P .
+
 ## Demo
 
-![demo](https://raw.githubusercontent.com/superjoran/homebridge-healthbox/master/.github/images/IMG_1534.PNG)
+![demo](.github/images/IMG_1534.PNG)

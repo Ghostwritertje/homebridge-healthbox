@@ -1,33 +1,45 @@
-import axios from 'axios';
 import {HealthBoxBoostResponse} from './model/api/health-box-boost-response.http-model';
+import {HealthBoxInfoResponse} from './model/api/health-box-info-response.http-model';
 
+const REQUEST_TIMEOUT_MS = 2000; // stay under Homebridge's 3s "slow read handler" warning
 
 export class HealthBoxApiService {
+  private readonly INFO_API = '/v1/api/data/current';
+  private readonly GLOBAL_SENSOR_API = '/v2/api/data/current/sensor/';
+  private readonly BOOST_API = '/v2/api/boost/';
 
   constructor(
-    private healthBoxUrl: string,
-    private boostFanSpeed: number,
-    private boostDuration: number,
+    private readonly healthBoxUrl: string,
+    private readonly boostFanSpeed: number,
+    private readonly boostDuration: number,
   ) {
   }
 
-  private readonly GLOBAL_SENSOR_API = '/v2/api/data/current/sensor/';
-  private readonly ROOM_API = '/v2/api/data/current/room/';
-  private readonly BOOST_API = '/v2/api/boost/';
-
-  public getHealthSensor(id: number): Promise<string> {
-    return axios.get<string>(this.healthBoxUrl + this.GLOBAL_SENSOR_API + id + '/parameter/index/value')
-      .then(axiosResponse => axiosResponse.data);
+  getInfo(): Promise<HealthBoxInfoResponse> {
+    return this.request<HealthBoxInfoResponse>(this.INFO_API);
   }
 
-  public getRoomActuatorValue(id: number): Promise<string> {
-    return axios.get<string>(this.healthBoxUrl + this.ROOM_API + id + '/actuator/0/parameter/flow_rate/value')
-      .then(axiosResponse => axiosResponse.data);
+  async getHealthSensor(id: number): Promise<number> {
+    return Number(await this.request<number | string>(this.GLOBAL_SENSOR_API + id + '/parameter/index/value'));
   }
 
-  public boost(id: number, on: boolean): Promise<HealthBoxBoostResponse> {
-    return axios.put<HealthBoxBoostResponse>(this.healthBoxUrl + this.BOOST_API + id, {
-      'enable': on, 'level': this.boostFanSpeed, 'timeout': this.boostDuration,
-    }).then(axiosResponse => axiosResponse.data);
+  getBoost(id: number): Promise<HealthBoxBoostResponse> {
+    return this.request<HealthBoxBoostResponse>(this.BOOST_API + id);
+  }
+
+  boost(id: number, on: boolean): Promise<HealthBoxBoostResponse> {
+    return this.request<HealthBoxBoostResponse>(this.BOOST_API + id, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({'enable': on, 'level': this.boostFanSpeed, 'timeout': this.boostDuration}),
+    });
+  }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const response = await fetch(this.healthBoxUrl + path, {...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)});
+    if (!response.ok) {
+      throw new Error(`HealthBox ${init.method ?? 'GET'} ${path} returned HTTP ${response.status}`);
+    }
+    return await response.json() as T;
   }
 }
