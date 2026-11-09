@@ -20,9 +20,10 @@ Fork of the archived [SuperJoran/homebridge-healthbox](https://github.com/SuperJ
 
 ## Installation
 
-Install it from GitHub into the same global `node_modules` that Homebridge uses (it builds on install):
+Build a tarball (`npm pack` lints and builds) and install it into the same global `node_modules` that Homebridge uses:
 
-    sudo npm install -g github:Ghostwritertje/homebridge-healthbox#v2.0.0
+    npm install && npm pack
+    sudo npm install -g ./homebridge-healthbox-plugin-2.0.0.tgz
 
 Then add the platform to `config.json`:
 
