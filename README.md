@@ -11,7 +11,9 @@ If the Healthbox is unreachable the accessories show "No Response" (requests tim
 retries in the background until the Healthbox is back.
 
 Fork of the archived [SuperJoran/homebridge-healthbox](https://github.com/SuperJoran/homebridge-healthbox)
-(npm `homebridge-healthbox-plugin` ≤ 1.1.6). Version 2.0 is not published to npm.
+(npm `homebridge-healthbox-plugin` ≤ 1.1.6). Version 2.x is not on npm; install it from the GitHub release.
+Upgrading in place from 1.x should keep your accessories, because the accessory IDs are unchanged (not tested; the author
+re-paired from scratch).
 
 ## Requirements
 
@@ -20,10 +22,14 @@ Fork of the archived [SuperJoran/homebridge-healthbox](https://github.com/SuperJ
 
 ## Installation
 
-Build a tarball (`npm pack` lints and builds) and install it into the same global `node_modules` that Homebridge uses:
+Install the release tarball into the same global `node_modules` that Homebridge uses (drop `sudo` if your npm
+global directory is writable, which it is after `hb-service install` on macOS):
 
-    npm install && npm pack
-    sudo npm install -g ./homebridge-healthbox-plugin-2.0.0.tgz
+    sudo npm install -g https://github.com/Ghostwritertje/homebridge-healthbox/releases/download/v2.0.0/homebridge-healthbox-plugin-2.0.0.tgz
+
+Or build it yourself: `npm install && npm pack` (lints and builds), then `npm install -g ./homebridge-healthbox-plugin-*.tgz`.
+
+Releasing: bump `version`, `npm pack`, tag, then `gh release create vX.Y.Z -R Ghostwritertje/homebridge-healthbox homebridge-healthbox-plugin-X.Y.Z.tgz`.
 
 Then add the platform to `config.json`:
 
